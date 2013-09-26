@@ -27,6 +27,10 @@
  */
 #define HEAP_SOURCE_MAX_HEAP_COUNT 2
 
+#define CONCURRENT_START_DEFAULT (128 << 10)
+
+static unsigned int concurrentStart = CONCURRENT_START_DEFAULT;
+
 enum HeapSourceValueSpec {
     HS_FOOTPRINT,
     HS_ALLOWED_FOOTPRINT,
