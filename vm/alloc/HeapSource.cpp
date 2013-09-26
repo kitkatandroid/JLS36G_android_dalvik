@@ -43,14 +43,12 @@ static void trimHeaps();
 /* Start a concurrent collection when free memory falls under this
  * many bytes.
  */
-#define CONCURRENT_START_DEFAULT (128 << 10)
-
-static unsigned int concurrentStart = CONCURRENT_START_DEFAULT; 
+#define CONCURRENT_START (128 << 10)
 
 /* The next GC will not be concurrent when free memory after a GC is
  * under this many bytes.
  */
-#define CONCURRENT_MIN_FREE (concurrentStart + (128 << 10))
+#define CONCURRENT_MIN_FREE (CONCURRENT_START + (128 << 10))
 
 #define HS_BOILERPLATE() \
     do { \
@@ -410,9 +408,9 @@ static bool addNewHeap(HeapSource *hs)
                   overhead, hs->maximumSize);
         return false;
     }
-    size_t morecoreStart = MAX(SYSTEM_PAGE_SIZE, gDvm.heapStartingSize); 
+    size_t morecoreStart = SYSTEM_PAGE_SIZE;
     heap.maximumSize = hs->growthLimit - overhead;
-    heap.concurrentStartBytes = hs->minFree - concurrentStart;
+    heap.concurrentStartBytes = hs->minFree - CONCURRENT_START;
     heap.base = base;
     heap.limit = heap.base + heap.maximumSize;
     heap.brk = heap.base + morecoreStart;
@@ -613,8 +611,8 @@ GcHeap* dvmHeapSourceStartup(size_t startSize, size_t maximumSize,
     if (hs->maxFree > hs->maximumSize) {
       hs->maxFree = hs->maximumSize;
     }
-    if (hs->minFree < concurrentStart) {
-      hs->minFree = concurrentStart;
+    if (hs->minFree < CONCURRENT_START) {
+      hs->minFree = CONCURRENT_START;
     } else if (hs->minFree > hs->maxFree) {
       hs->minFree = hs->maxFree;
     }
@@ -651,13 +649,6 @@ fail:
 
 bool dvmHeapSourceStartupAfterZygote()
 {
-    //For each new application forked, we need to reset softLimit and
-    //concurrentStartBytes to be the correct expected value, not the one
-    //inherit from Zygote
-    HeapSource* hs   = gHs;
-
-    hs->softLimit=SIZE_MAX;
-    hs->heaps[0].concurrentStartBytes = mspace_footprint(hs->heaps[0].msp) - concurrentStart; 
     return gDvm.concurrentMarkSweep ? gcDaemonStartup() : true;
 }
 
@@ -1235,9 +1226,8 @@ static void setIdealFootprint(size_t max)
 static void snapIdealFootprint()
 {
     HS_BOILERPLATE();
-    HeapSource *hs = gHs;
 
-    setIdealFootprint(getSoftFootprint(true) + hs->minFree);
+    setIdealFootprint(getSoftFootprint(true));
 }
 
 /*
