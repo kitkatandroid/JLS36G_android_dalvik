@@ -1269,6 +1269,45 @@ void dvmSetTargetHeapUtilization(float newTarget)
 }
 
 /*
+* Sets TargetHeapMinFree
+*/
+void dvmSetTargetHeapMinFree(size_t size)
+{
+    HS_BOILERPLATE();
+    gHs->minFree = size;
+    LOGD_HEAP("dvmSetTargetHeapIdealFree %d", gHs->minFree );
+}
+
+/*
+* Gets TargetHeapMinFree
+*/
+int dvmGetTargetHeapMinFree()
+{
+    HS_BOILERPLATE();
+    LOGD_HEAP("dvmGetTargetHeapIdealFree %d", gHs->minFree );
+    return gHs->minFree;
+}
+
+/*
+* Sets concurrentStart
+*/
+void dvmSetTargetHeapConcurrentStart(size_t size)
+{
+    concurrentStart = size;
+    LOGD_HEAP("dvmSetTargetHeapConcurrentStart %d", size );
+}
+
+/*
+* Gets concurrentStart
+*/
+int dvmGetTargetHeapConcurrentStart()
+{
+    HS_BOILERPLATE();
+    LOGD_HEAP("dvmGetTargetHeapConcurrentStart %d", concurrentStart );
+    return concurrentStart;
+}
+
+/*
  * Given the size of a live set, returns the ideal heap size given
  * the current target utilization and MIN/MAX values.
  */
